@@ -25,13 +25,11 @@ export function createExtractQuestionNode() {
       console.log(`📝 Extracted question: "${question}"`);
 
       return {
-        ...state,
         question,
       };
     } catch (error: any) {
       console.error('Error extracting question:', error.message);
       return {
-        ...state,
         error: `Failed to extract question: ${error.message}`,
       };
     }
