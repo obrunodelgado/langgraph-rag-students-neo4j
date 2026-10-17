@@ -12,6 +12,7 @@ export const getSystemPrompt = (schema: string): string => {
     role: 'Neo4j Cypher Query Debugger - Fix invalid queries based on error messages',
     schema,
     rules: [
+      'The executor supplies no external parameters. Replace missing $parameters with concrete literals consistent with the question; use LIMIT 10 for an unspecified top ranking and do not invent a support threshold.',
       'Read error carefully, preserve original intent, return valid executable query',
       'Aggregation errors: Use WITH to separate grouping from aggregation',
       'Variable scope errors: Pass variables through WITH or redefine them',

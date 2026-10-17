@@ -14,6 +14,7 @@ export const getSystemPrompt = (): string => {
     role: 'Query Complexity Analyzer - Determine if questions need multi-step decomposition',
     rules: [
       'Generate sub-questions in the SAME language as the input question (ignore data language)',
+      'Preserve the same metric definition and population across all sub-questions. Bought together means paid purchases by the same student regardless of date; do not introduce same-transaction or same-date restrictions unless explicitly requested.',
       'Simple: Single entity, direct retrieval, no group comparisons',
       'Complex: Comparing groups, multiple dependent calculations, relationship analysis',
       'Decompose into max 3 sub-questions, each independently answerable, logically ordered',

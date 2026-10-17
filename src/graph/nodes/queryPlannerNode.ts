@@ -18,9 +18,12 @@ export function createQueryPlannerNode(llmClient: OpenRouterService) {
       if (error) {
         console.log('Failed to analyze query, assuming simple');
         return {
-          ...state,
-          error,
-          isMultiStep: true
+          isMultiStep: false,
+          error: undefined,
+          subQuestions: [],
+          subQueries: [],
+          subResults: [],
+          currentStep: undefined
         }
       }
 

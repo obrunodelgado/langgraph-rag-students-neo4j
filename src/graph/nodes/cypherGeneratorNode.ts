@@ -38,7 +38,7 @@ export function createCypherGeneratorNode(
 
       const schema = await neo4jService.getSchema()
       const systemPrompt = await getSystemPrompt(schema, SALES_CONTEXT)
-      const userPrompt = await getUserPromptTemplate(targetQuestion)
+      const userPrompt = getUserPromptTemplate(targetQuestion, state.question)
 
       const { data, error } = await llmClient.generateStructured(
         systemPrompt,
@@ -52,16 +52,28 @@ export function createCypherGeneratorNode(
         }
       }
 
-      console.log(`Generated Cypher query: ${data?.query}`)
+      if (!data?.query?.trim()) {
+        return { error: 'Failed to generate query: empty response' };
+      }
+
+      const correctionState = {
+        correctionAttempts: 0,
+        originalQuery: undefined,
+        validationError: undefined,
+        needsCorrection: false,
+      };
+      console.log(`Generated Cypher query: ${data.query}`)
       if (state.isMultiStep && state.subQuestions?.length) {
         return {
-          query: data?.query,
+          ...correctionState,
+          query: data.query,
           subQueries: state.subQueries ? ([...state.subQueries, data?.query ?? ""]) : [data?.query ?? ""],
         }
       }
 
       return {
-        query: data?.query
+        ...correctionState,
+        query: data.query
       };
     } catch (error: any) {
       console.error('Error generating Cypher query:', error.message);

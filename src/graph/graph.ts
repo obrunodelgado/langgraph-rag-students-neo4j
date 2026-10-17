@@ -7,6 +7,7 @@ import {
 import { withLangGraph } from "@langchain/langgraph/zod";
 
 import { z } from 'zod/v3';
+import config from '../config.ts';
 import type { BaseMessage } from '@langchain/core/messages';
 
 import { Neo4jService } from '../services/neo4jService.ts';
@@ -76,11 +77,16 @@ export function buildSalesGraph(
       return 'queryPlanner';
     })
 
-    .addEdge('queryPlanner', 'cypherGenerator')
-    .addEdge('cypherGenerator', 'cypherExecutor')
+    .addConditionalEdges('queryPlanner', (state: GraphState) =>
+      state.error ? 'analyticalResponse' : 'cypherGenerator',
+    )
+    .addConditionalEdges('cypherGenerator', (state: GraphState) =>
+      state.error ? 'analyticalResponse' : 'cypherExecutor',
+    )
 
     .addConditionalEdges('cypherExecutor', (state: GraphState) => {
-      if (state.needsCorrection && (!state.correctionAttempts || state.correctionAttempts < 1)) {
+      if (state.error) return 'analyticalResponse';
+      if (state.needsCorrection && (state.correctionAttempts ?? 0) < config.maxCorrectionAttempts) {
         return 'cypherCorrection';
       }
 
@@ -93,7 +99,9 @@ export function buildSalesGraph(
       return 'analyticalResponse';
     })
 
-    .addEdge('cypherCorrection', 'cypherExecutor')
+    .addConditionalEdges('cypherCorrection', (state: GraphState) =>
+      state.error ? 'analyticalResponse' : 'cypherExecutor',
+    )
     .addEdge('analyticalResponse', END);
 
   return workflow.compile();

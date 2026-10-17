@@ -44,7 +44,7 @@ export class Neo4jService {
       return true;
     } catch (error) {
       console.error('❌ Query validation failed:', error);
-      return false;
+      throw error;
     }
   }
 

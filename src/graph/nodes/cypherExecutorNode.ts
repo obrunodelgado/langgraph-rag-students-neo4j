@@ -1,4 +1,3 @@
-import { Graph } from '@langchain/core/runnables/graph';
 import config from '../../config.ts';
 import { Neo4jService } from '../../services/neo4jService.ts';
 import type { GraphState } from '../graph.ts';
@@ -8,13 +7,7 @@ async function executeQuery(
   neo4jService: Neo4jService
 ) {
   try {
-    const isValid = await neo4jService.validateQuery(query)
-    if (!isValid) {
-      return {
-        results: null,
-        error: 'Query validation failed - syntax or structure error'
-      }
-    }
+    await neo4jService.validateQuery(query);
 
     const results = await neo4jService.query(query);
     if (!results.length) {
@@ -81,7 +74,7 @@ export function createCypherExecutorNode(neo4jService: Neo4jService) {
       const { results, error } = await executeQuery(state.query!, neo4jService)
       if (error && results === null) {
         console.log('Erro ao executar a query');
-        if (state.correctionAttempts ?? 0 < config.maxCorrectionAttempts) {
+        if ((state.correctionAttempts ?? 0) < config.maxCorrectionAttempts) {
           console.log('Tentará refazer a query.');
           return {
             validationError: error,
@@ -90,7 +83,8 @@ export function createCypherExecutorNode(neo4jService: Neo4jService) {
           }
         }
         return {
-          error: 'Invalid cypher query - correction failed'
+          error: `Query execution failed: ${error}`,
+          needsCorrection: false
         }
       }
 
