@@ -57,7 +57,6 @@ export function createCypherGeneratorNode(
         return {
           query: data?.query,
           subQueries: state.subQueries ? ([...state.subQueries, data?.query ?? ""]) : [data?.query ?? ""],
-          currentStep: stepInfo?.stepNumber
         }
       }
 
